@@ -243,24 +243,19 @@ class WolfSheep(mesa.Model, MultiAgentEnv):
 def env_creator(_):
     return WolfSheep()  # Assuming there are 10 sheep
 
-def rl_model(args):
-
-    # ray.init(local_mode=True)
-    # Register the environment
-    tune.register_env("WorldSheepModel-v0", env_creator)
-
+def get_config(framework):
     # Define the configuration for the PPO algorithm
     config = (
         PPOConfig()
         .environment("WorldSheepModel-v0")
-        .framework(args.framework)
+        .framework(framework)
         .multi_agent(
             policies={
                 "policy_sheep": PolicySpec(
-                    config=PPOConfig.overrides(framework_str=args.framework)
+                    config=PPOConfig.overrides(framework_str=framework)
                 ),
                 "policy_wolf": PolicySpec(
-                    config=PPOConfig.overrides(framework_str=args.framework)
+                    config=PPOConfig.overrides(framework_str=framework)
                 )
             },
             policy_mapping_fn=lambda agent_id, *args, **kwargs: "policy_sheep" if isinstance(agent_id, Sheep) else "policy_wolf",
@@ -277,12 +272,21 @@ def rl_model(args):
         )
     )
 
+    return config
+
+def rl_model(args):
+
+    # ray.init(local_mode=True)
+    # Register the environment
+    tune.register_env("WorldSheepModel-v0", env_creator)
+
     stop = {
         "training_iteration": args.stop_iters,
         "episode_reward_mean": args.stop_reward,
         "timesteps_total": args.stop_timesteps,
     }
 
+    config = get_config(args.framework)
     results = tune.Tuner(
             "PPO",
             param_space=config.to_dict(),
@@ -290,7 +294,7 @@ def rl_model(args):
 
 
     # Uncomment to run trained checkpoint    
-    # checkpoint_path = "mesa_rl/model/wolf_sheep_policy/"
+    # checkpoint_path = "../model/wolf_sheep_policy/"
 
     # trainer = tune.run(
     #     "PPO",

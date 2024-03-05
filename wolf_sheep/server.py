@@ -6,6 +6,7 @@ from ray import tune
 import mesa
 from agents import GrassPatch, Sheep, Wolf
 import numpy as np
+from model import get_config
 from ray import tune
 import os
 from ray import tune
@@ -48,38 +49,11 @@ class WolfSheepRL(WolfSheep):
         # Register the environment
         tune.register_env("WorldSheepModel-v0", env_creator)
 
-        # Define the configuration for the PPO algorithm
-        config = (
-            PPOConfig()
-            .environment("WorldSheepModel-v0")
-            .framework("torch")
-            .multi_agent(
-                policies={
-                    "policy_sheep": PolicySpec(
-                        config=PPOConfig().overrides(framework_str="torch")
-                    ),
-                    "policy_wolf": PolicySpec(
-                        config=PPOConfig().overrides(framework_str="torch")
-                    )
-                },
-                policy_mapping_fn=lambda agent_id, *args, **kwargs: "policy_sheep" if isinstance(agent_id, Sheep) else "policy_wolf",
-                policies_to_train=["policy_sheep", "policy_wolf"],
-            )
-            .resources(num_gpus=int(os.environ.get("RLLIB_NUM_GPUS", "1")))
-            .rl_module(
-                rl_module_spec=MultiAgentRLModuleSpec(
-                    module_specs={
-                        "policy_sheep": SingleAgentRLModuleSpec(),
-                        "policy_wolf": SingleAgentRLModuleSpec()
-                    }
-                ),
-            )
-        )
-
+        config = get_config("torch")
         self.rl_model = config.build()
 
         # Load the checkpoint
-        checkpoint_path = "mesa_rl/model/wolf_sheep_policy/"
+        checkpoint_path = "../model/wolf_sheep_policy/"
         self.rl_model.restore(checkpoint_path)
         self.wolf_policy = self.rl_model.get_policy("policy_wolf")
         self.sheep_policy = self.rl_model.get_policy("policy_sheep")
