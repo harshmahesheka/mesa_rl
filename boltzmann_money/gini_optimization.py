@@ -184,7 +184,7 @@ def rl_model(args):
                                  log_path='./logs/', eval_freq=5000)
     # Define the PPO model
     # model = PPO("MlpPolicy", env, verbose=1, tensorboard_log="./logs/")
-    model = PPO.load("model/trained_model_1.zip", env, verbose=1)
+    model = PPO.load("mesa_rl/model/boltzmann_money.zip", env, verbose=1)
 
     # Train the model
     model.learn(total_timesteps=args.stop_timesteps, callback=[eval_callback])

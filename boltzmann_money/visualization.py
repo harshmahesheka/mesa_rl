@@ -8,7 +8,7 @@ from mesa.visualization.ModularVisualization import ModularServer
 class MoneyModelRL(MoneyModel):
     def __init__(self, N, width, height):
         super().__init__(N, width, height)
-        self.rl_model = model = PPO.load("model/trained_model_1.zip")
+        self.rl_model = model = PPO.load("mesa_rl/model/boltzmann_money.zip")
 
     def step(self):
         # Collect data
