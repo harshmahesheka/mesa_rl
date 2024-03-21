@@ -13,3 +13,5 @@ This repository showcases distinct applications of reinforcement learning (RL) u
 <p align="center">
     <img src="wolf_sheep/wolf_sheep.gif" width="400" height="300">
 </p>
+
+3. Collaborative Survival using Petting Zoo: This implementation shows the conversion of a Mesa environment into a Petting Zoo environment which can be trained using various RL libraries like RLlib.
