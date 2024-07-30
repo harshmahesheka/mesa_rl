@@ -1,34 +1,15 @@
 import mesa
-from agent import Citizen, Cop
-import mesa
 import numpy as np
 import gymnasium as gym
 from ray.rllib.env import MultiAgentEnv
+from . agent import Cop_RL, Citizen_RL
+from . utility import create_intial_agents, grid_to_matrix
+from mesa_models.epstein_civil_violence.model import EpsteinCivilViolence
 
-
-class EpsteinCivilViolence(mesa.Model, MultiAgentEnv):
+class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
     """
-    Model 1 from "Modeling civil violence: An agent-based computational
-    approach," by Joshua Epstein.
-    http://www.pnas.org/content/99/suppl_3/7243.full
-    Attributes:
-        height: grid height
-        width: grid width
-        citizen_density: approximate % of cells occupied by citizens.
-        cop_density: approximate % of cells occupied by cops.
-        citizen_vision: number of cells in each direction (N, S, E and W) that
-            citizen can inspect
-        cop_vision: number of cells in each direction (N, S, E and W) that cop
-            can inspect
-        legitimacy:  (L) citizens' perception of regime legitimacy, equal
-            across all citizens
-        max_jail_term: (J_max)
-            > threshold, citizen rebels
-        arrest_prob_constant: set to ensure agents make plausible arrest
-            probability estimates
-        movement: binary, whether agents try to move at step end
-        max_iters: model may not have a natural stopping point, so we set a
-            max.
+    Custom environment class for the Epstein Civil Violence model with reinforcement learning.
+    Inherits from EpsteinCivilViolence and MultiAgentEnv.
     """
 
     def __init__(
@@ -45,175 +26,99 @@ class EpsteinCivilViolence(mesa.Model, MultiAgentEnv):
         movement=True,
         max_iters=200,
     ):
-        super().__init__()
-        self.width = width
-        self.height = height
-        self.citizen_density = citizen_density
-        self.cop_density = cop_density
-        self.citizen_vision = citizen_vision
-        self.cop_vision = cop_vision
-        self.legitimacy = legitimacy
-        self.max_jail_term = max_jail_term
-        self.arrest_prob_constant = arrest_prob_constant
-        self.movement = movement
-        self.max_iters = max_iters
-        self.iteration = 0
-        self.schedule = mesa.time.RandomActivation(self)
-        self.grid = mesa.space.SingleGrid(width, height, torus=True)
+        """
+        Initialize the EpsteinCivilViolence_RL environment.
 
-        model_reporters = {
-            "Quiescent": lambda m: self.count_type_citizens(m, "Quiescent"),
-            "Active": lambda m: self.count_type_citizens(m, "Active"),
-            "Jailed": self.count_jailed,
-            "Cops": self.count_cops,
-        }
-        agent_reporters = {
-            "x": lambda a: a.pos[0],
-            "y": lambda a: a.pos[1],
-            "breed": lambda a: a.breed,
-            "jail_sentence": lambda a: getattr(a, "jail_sentence", None),
-            "condition": lambda a: getattr(a, "condition", None),
-            "arrest_probability": lambda a: getattr(a, "arrest_probability", None),
-        }
-        self.datacollector = mesa.DataCollector(
-            model_reporters=model_reporters, agent_reporters=agent_reporters
-        )
-        self.create_intial_agents()
-        self.running = True
-        self.datacollector.collect(self)
-        self.observation_space = gym.spaces.Box(low=0, high=4, shape=(80, ), dtype=np.float32)
-        self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(9), gym.spaces.Discrete(4)))
-        self.prev_active_citizens = 0
+        Parameters:
+        - width: Width of the grid.
+        - height: Height of the grid.
+        - citizen_density: Density of citizens in the grid.
+        - cop_density: Density of cops in the grid.
+        - citizen_vision: Vision range of citizens.
+        - cop_vision: Vision range of cops.
+        - legitimacy: Legitimacy parameter of the model.
+        - max_jail_term: Maximum jail term for arrested citizens.
+        - arrest_prob_constant: Constant used in arrest probability calculation.
+        - movement: Flag indicating whether agents can move or not.
+        - max_iters: Maximum number of iterations for the model.
+        """
+
+        super().__init__(width, height, citizen_density, cop_density, citizen_vision, cop_vision, legitimacy, max_jail_term, 0, arrest_prob_constant, movement, max_iters)
+        
+        # Defining RL specific attributes    
+        self.observation_space = gym.spaces.Box(low=0, high=4, shape=(((cop_vision*2+1)**2 - 1), ), dtype=np.float32)
+        self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(8), gym.spaces.Discrete(4)))
         self.observation = {}
-
-
-    def create_intial_agents(self):
-        unique_id = 0
-        if self.cop_density + self.citizen_density > 1:
-            raise ValueError("Cop density + citizen density must be less than 1")
-        for contents, (x, y) in self.grid.coord_iter():
-            if self.random.random() < self.cop_density:
-                unique_id_str = f"cop_{unique_id}"
-                cop = Cop(unique_id_str, self, (x, y), vision=self.cop_vision)
-                unique_id += 1
-                self.grid[x][y] = cop
-                self.schedule.add(cop)
-            elif self.random.random() < (self.cop_density + self.citizen_density):
-                unique_id_str = f"citizen_{unique_id}"
-                citizen = Citizen(
-                    unique_id_str,
-                    self,
-                    (x, y),
-                    hardship=self.random.random(),
-                    regime_legitimacy=self.legitimacy,
-                    risk_aversion=self.random.random(),
-                    vision=self.citizen_vision,
-                )
-                unique_id += 1
-                self.grid[x][y] = citizen
-                self.schedule.add(citizen)
-
-    def grid_to_matrix(self):
-        self.obs_grid = []
-        for i in self.grid._grid:
-            row = []
-            for j in i:
-                if j is None:
-                    row.append(0)
-                elif isinstance(j, Citizen):
-                    if j.condition == "Quiescent":
-                        row.append(1)
-                    elif j.condition == "Active":
-                        row.append(2)
-                    else:
-                        row.append(3)
-                else:
-                    row.append(4)
-            self.obs_grid.append(row)
+        self.reset()
 
     def step(self, action_dict):
-        # Check if either wolves or cop are extinct
-        self.grid_to_matrix()
+        """
+        Perform a step in the environment.
+
+        Parameters:
+        - action_dict: Dictionary containing actions for each agent.
+
+        Returns:
+        - observation: Current observation of the environment.
+        - rewards: Dictionary containing rewards for each agent.
+        - done: Dictionary indicating if each agent is done.
+        - truncated: Dictionary indicating if each agent is truncated.
+        - info: Additional information about the step.
+        """
+
+        # Convert observation to usable format
+        grid_to_matrix(self, Citizen_RL)
         self.action_dict = action_dict
+        
+        # Step the model
         self.schedule.step()
         self.datacollector.collect(self)
 
         rewards = {}
 
-        active_citizens = self.count_type_citizens(self, "Active")
-        jailed_citizens = self.count_jailed(self)
-        quiescent_citizens = self.count_type_citizens(self, "Quiescent")
-        cops = self.count_cops(self)
-        total_citizens = active_citizens + jailed_citizens + quiescent_citizens
-
-        # Check for rewards and execute actions
+        # Calculate rewards
         for agent in self.schedule.agents:
-            if isinstance(agent, Cop):
-                rewards[agent.unique_id] = (active_citizens - self.prev_active_citizens) / total_citizens
+            if isinstance(agent, Cop_RL):
+                if agent.arrest_made:
+                    # Cop is rewarded for making an arrest
+                    rewards[agent.unique_id] = 1
+                    agent.arrest_made = False
+                else:
+                    rewards[agent.unique_id] = 0
             else:
+                # An active agent is rewarded for its grievance
+                # A jailed agent is penalized for its risk aversion
                 if agent.jail_sentence > 0:
                     rewards[agent.unique_id] = -agent.risk_aversion
                 else:
-                    if agent.condition == "Quiescent":
-                        rewards[agent.unique_id] = -agent.grievance
+                    rewards[agent.unique_id] = 0 if agent.condition == "Quiescent" else agent.grievance * 3
 
+        # RL specific outputs for the environment
         done = {a.unique_id: False for a in self.schedule.agents}
-
-        # Prepare info dictionary
         truncated = {a.unique_id: False for a in self.schedule.agents}
         truncated['__all__'] = np.all(list(truncated.values()))
-        if self.schedule.time > self.max_iters:
-            done['__all__'] = True
-        else:
-            done['__all__'] = False
+        done['__all__'] = True if self.schedule.time > self.max_iters else False
 
         return self.observation, rewards, done, truncated, {}
     
     def reset(self, *, seed=None, options=None):
-        # Reset your environment here
+        """
+        Reset the environment after each episode.
+
+        Parameters:
+        - seed: Seed for random number generation.
+        - options: Additional options for resetting the environment.
+
+        Returns:
+        - observation: Initial observation of the environment.
+        - info: Additional information about the reset.
+        """
+
         super().reset()
         self.schedule = mesa.time.RandomActivation(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=True)
-        self.create_intial_agents()
-        self.grid_to_matrix()
+        create_intial_agents(self, Citizen_RL, Cop_RL)
+        grid_to_matrix(self, Citizen_RL)
         self.action_dict = {a.unique_id: (0, 0) for a in self.schedule.agents}
         self.schedule.step()
         return self.observation , {}
-    
-    @staticmethod
-    def count_type_citizens(model, condition, exclude_jailed=True):
-        """
-        Helper method to count agents by Quiescent/Active.
-        """
-        count = 0
-        for agent in model.schedule.agents:
-            if agent.breed == "cop":
-                continue
-            if exclude_jailed and agent.jail_sentence > 0:
-                continue
-            if agent.condition == condition:
-                count += 1
-        return count
-
-    @staticmethod
-    def count_jailed(model):
-        """
-        Helper method to count jailed agents.
-        """
-        count = 0
-        for agent in model.schedule.agents:
-            if agent.breed == "citizen" and agent.jail_sentence > 0:
-                count += 1
-        return count
-
-    @staticmethod
-    def count_cops(model):
-        """
-        Helper method to count jailed agents.
-        """
-        count = 0
-        for agent in model.schedule.agents:
-            if agent.breed == "cop":
-                count += 1
-        return count
-
