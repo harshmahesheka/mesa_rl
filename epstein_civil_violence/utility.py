@@ -3,13 +3,15 @@ def create_intial_agents(self, Citizen_RL, Cop_RL):
     unique_id = 0
     if self.cop_density + self.citizen_density > 1:
         raise ValueError("Cop_RL density + citizen density must be less than 1")
+    cops = []
+    citizens = []
     for contents, (x, y) in self.grid.coord_iter():
         if self.random.random() < self.cop_density:
             unique_id_str = f"cop_{unique_id}"
             cop = Cop_RL(unique_id_str, self, (x, y), vision=self.cop_vision)
             unique_id += 1
             self.grid[x][y] = cop
-            self.schedule.add(cop)
+            cops.append(cop)
         elif self.random.random() < (self.cop_density + self.citizen_density):
             unique_id_str = f"citizen_{unique_id}"
             citizen = Citizen_RL(
@@ -19,11 +21,18 @@ def create_intial_agents(self, Citizen_RL, Cop_RL):
                 hardship=self.random.random(),
                 regime_legitimacy=self.legitimacy,
                 risk_aversion=self.random.random(),
+                threshold=0,
                 vision=self.citizen_vision,
             )
             unique_id += 1
             self.grid[x][y] = citizen
-            self.schedule.add(citizen)
+            citizens.append(citizen)
+    # Initializing cops then citizens
+    # This ensures cops act out their step before citizens
+    for cop in cops:
+        self.schedule.add(cop)
+    for citizen in citizens:
+        self.schedule.add(citizen)     
 
 def grid_to_matrix(self, Citizen_RL):
     # Convert neighborhood to observation grid
@@ -52,12 +61,8 @@ def move(self, action, empty_neighbors):
         new_position = (self.pos[0], self.pos[1] - 1)  # Move up
     elif action == 3:
         new_position = (self.pos[0], self.pos[1] + 1)  # Move down
+    else:
+        new_position = self.pos  # Don't move
     new_position = (new_position[0] % self.model.grid.width, new_position[1] % self.model.grid.height)  # Wrap around the grid
     if new_position in empty_neighbors:
         self.model.grid.move_agent(self, new_position)  # Move to the new position
-
-def update_neighbors(self):
-    self.neighborhood = self.model.grid.get_neighborhood(self.pos, moore=True, radius=self.vision)  # Get the Moore neighborhood
-    self.neighbors_agent = self.model.grid.get_cell_list_contents(self.neighborhood)  # Get the contents of the neighborhood cells
-    self.neighbors = [self.model.obs_grid[neighbor[0]][neighbor[1]] for neighbor in self.neighborhood]  # Get the values from the observation grid for the neighborhood cells
-    self.empty_neighbors = [c for c in self.neighborhood if self.model.grid.is_cell_empty(c)]  # Get the empty cells in the neighborhood

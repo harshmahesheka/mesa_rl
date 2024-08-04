@@ -47,9 +47,7 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
         
         # Defining RL specific attributes    
         self.observation_space = gym.spaces.Box(low=0, high=4, shape=(((cop_vision*2+1)**2 - 1), ), dtype=np.float32)
-        self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(8), gym.spaces.Discrete(4)))
-        self.observation = {}
-        self.reset()
+        self.action_space = gym.spaces.Tuple((gym.spaces.Discrete(8), gym.spaces.Discrete(5)))
 
     def step(self, action_dict):
         """
@@ -65,9 +63,7 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
         - truncated: Dictionary indicating if each agent is truncated.
         - info: Additional information about the step.
         """
-
-        # Convert observation to usable format
-        grid_to_matrix(self, Citizen_RL)
+        # Update the action dictionary for step
         self.action_dict = action_dict
         
         # Step the model
@@ -82,7 +78,6 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
                 if agent.arrest_made:
                     # Cop is rewarded for making an arrest
                     rewards[agent.unique_id] = 1
-                    agent.arrest_made = False
                 else:
                     rewards[agent.unique_id] = 0
             else:
@@ -93,13 +88,19 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
                 else:
                     rewards[agent.unique_id] = 0 if agent.condition == "Quiescent" else agent.grievance * 3
 
+        # Update matrix for observation space
+        grid_to_matrix(self, Citizen_RL)
+        observation = {}
+        for agent in self.schedule.agents:
+            observation[agent.unique_id] = [self.obs_grid[neighbor[0]][neighbor[1]] for neighbor in agent.neighborhood]  # Get the values from the observation grid for the neighborhood cells
+
         # RL specific outputs for the environment
         done = {a.unique_id: False for a in self.schedule.agents}
         truncated = {a.unique_id: False for a in self.schedule.agents}
         truncated['__all__'] = np.all(list(truncated.values()))
         done['__all__'] = True if self.schedule.time > self.max_iters else False
 
-        return self.observation, rewards, done, truncated, {}
+        return observation, rewards, done, truncated, {}
     
     def reset(self, *, seed=None, options=None):
         """
@@ -115,10 +116,18 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
         """
 
         super().reset()
-        self.schedule = mesa.time.RandomActivation(self)
+        # Using base scheduler to maintain the order of agents
+        self.schedule = mesa.time.BaseScheduler(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=True)
         create_intial_agents(self, Citizen_RL, Cop_RL)
         grid_to_matrix(self, Citizen_RL)
+        # Intialize action dictionary with no action
         self.action_dict = {a.unique_id: (0, 0) for a in self.schedule.agents}
+        # Update neighbors for observation space
+        for agent in self.schedule.agents:
+            agent.update_neighbors()
         self.schedule.step()
-        return self.observation , {}
+        observation = {}
+        for agent in self.schedule.agents:
+            observation[agent.unique_id] = [self.obs_grid[neighbor[0]][neighbor[1]] for neighbor in agent.neighborhood]  # Get the values from the observation grid for the neighborhood cells
+        return observation , {}

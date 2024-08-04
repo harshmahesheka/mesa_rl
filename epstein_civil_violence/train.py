@@ -4,13 +4,13 @@ from . model import EpsteinCivilViolence_RL
 from ray.rllib.policy.policy import PolicySpec
 
 def env_creator(_):
-    return EpsteinCivilViolence_RL(width=5, height=5, citizen_density=0.5, cop_density=0.1, citizen_vision=1, cop_vision=1, legitimacy=0.82, max_jail_term=10)
+    return EpsteinCivilViolence_RL(width=20, height=20, citizen_density=0.5, cop_density=0.1, citizen_vision=4, cop_vision=4, legitimacy=0.82, max_jail_term=10)
 
 config = {
     "env_name": "WorldcopModel-v0",
     "env_creator": env_creator,
     "framework": "torch",
-    "train_batch_size": 2000,
+    "train_batch_size": 800,
     "policies": {
         "policy_cop": PolicySpec(config=PPOConfig.overrides(framework_str="torch")),
         "policy_citizen": PolicySpec(config=PPOConfig.overrides(framework_str="torch"))
@@ -22,5 +22,5 @@ config = {
     "num_env_runners": 20,
     "num_envs_per_env_runner": 1,
     "batch_mode": "truncate_episodes",
-    "rollout_fragment_length": 20
+    "rollout_fragment_length": 40
 }
