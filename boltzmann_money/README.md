@@ -10,5 +10,6 @@ This folder showcases how to solve the Boltzmann wealth model with Proximal Poli
 
 ## Model Behaviour
 The adgent as seen below learns to move towards a corner of the grid. These brings all the agents together allowing exchange of money between them resulting in reward maximization.
-
+<p align="center">
 <img src="ppo_agent.gif" width="500" height="400">
+</p>

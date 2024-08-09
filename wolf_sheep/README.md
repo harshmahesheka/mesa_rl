@@ -27,5 +27,6 @@ This project demonstrates the use of the RLlib library to implement Multi-Agent 
 By leveraging RLlib and Multi-Agent Learning, this project provides insights into the dynamics of predator-prey relationships and optimal behavior strategies in a simulated environment.
 
 
-
+<p align="center">
 <img src="resources/wolf_sheep.gif" width="500" height="400">
+</p>

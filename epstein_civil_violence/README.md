@@ -25,5 +25,6 @@ This project demonstrates the use of the RLlib library to implement Multi-Agent 
 By leveraging RLlib and Multi-Agent Learning, this project provides insights into the dynamics of violence in a society and various strategies in a simulated environment.
 
 
-
-<img src="wolf_sheep.gif" width="500" height="400">
+<p align="center">
+<img src="resources/epstein.gif" width="500" height="400">
+</p>
