@@ -1,22 +1,31 @@
-# Collaborative Survival (Wolf-Sheep Predation Model)
-This project demonstrates the use of the RLlib library to implement Multi-Agent Reinforcement Learning (MARL) on the classic Wolf-Sheep predation problem. The environment details can be found on the Mesa project's GitHub repository [here](https://github.com/projectmesa/mesa-examples/tree/main/examples/wolf_sheep). Overall the model showcases an example on how to easily inegrate multi agent libraries like RLlib with mesa and use it's visualziation tools to debug and simulate the policy.
+# Collaborative Survival: Wolf-Sheep Predation Model
+
+This project demonstrates the use of the RLlib library to implement Multi-Agent Reinforcement Learning (MARL) in the classic Wolf-Sheep predation problem. The environment details can be found on the Mesa project's GitHub repository [here](https://github.com/projectmesa/mesa-examples/tree/main/examples/wolf_sheep).
+
+## Key Features
+
+**RLlib and Multi-Agent Learning**:
+- **Library Utilized**: The project leverages the RLlib library to concurrently train two independent PPO (Proximal Policy Optimization) agents.
+- **Agents**: 
+  - **Wolf**: Predatory agent which survives by eating sheeps
+  - **Sheep**: Prey agent survives by eating grass
+
+**Input and Observation Space**:
+- **Observation Grid**: Each agent's policy receives a 10x10 grid centered on itself as input.
+  - **Grid Details**: The grid incorporates information about the presence of other agents (wolves, sheep, and grass) within the grid.
+  - **Agent's Energy Level**: The agent's current energy level is also included in the observations.
+
+**Action Space**:
+- **Action Space**: The action space is the ID of the neighboring tile to which the agent wants to move.
+
+**Behavior and Training Outcomes**:
+- **Optimal Behavior**:
+  - **Wolf**: Learns to move towards the nearest sheep.
+  - **Sheep**: Learns to run away from wolves and is attracted to grass.
+- **Density Variations**: You can vary the densities of sheep and wolves to observe different results.
+
+By leveraging RLlib and Multi-Agent Learning, this project provides insights into the dynamics of predator-prey relationships and optimal behavior strategies in a simulated environment.
 
 
-# Key Features:
 
-- RLlib and Multi-Agent Learning: The project leverages the RLlib library to concurrently train two independent PPO (Proximal Policy Optimization) agents, one representing the wolf and the other the sheep.
-- Observation Space: Each agent's policy receives a 10x10 grid centered on itself as input. This grid incorporates information about:
-Presence of other agents (wolves, sheep, and grass) within the grid
-Agent's current energy level
-- Server Code Adaptation: The provided server code has been modified to seamlessly integrate outputs from trained models, facilitating visualization for analysis and debugging.
-- Training Results:
-    - Random agent: Average episode length of 76
-    - Trained agent (after 3 hours): Average episode length significantly increased to 215
-- Visualization and Debuggability: The model offers a practical example of how to effectively integrate multi-agent RL libraries like RLlib with Mesa's visualization tools, enabling:
-Monitoring of simulated agent behavior
-Debugging and refining trained policies
-Future Work:
-
-TODO: Investigate and address the performance gap observed when interfacing the trained model compared to its performance during training.
-
-<img src="wolf_sheep.gif" width="500" height="400">
+<img src="resources/wolf_sheep.gif" width="500" height="400">

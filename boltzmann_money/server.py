@@ -1,35 +1,28 @@
-from gini_optimization import MoneyModel
+from model import BoltzmannWealthModel_RL
 from stable_baselines3 import PPO
 import mesa
-from mesa.visualization.modules import CanvasGrid, ChartModule
+from mesa.visualization.modules import  ChartModule
 from mesa.visualization.ModularVisualization import ModularServer
+import os
 
 # Modify the MoneyModel class to take actions from the RL model
-class MoneyModelRL(MoneyModel):
+class MoneyModelRL(BoltzmannWealthModel_RL):
     def __init__(self, N, width, height):
         super().__init__(N, width, height)
-        self.rl_model = model = PPO.load("mesa_rl/model/boltzmann_money.zip")
+        model_path = os.path.join(os.path.dirname(__file__), '..', 'model', 'boltzmann_money.zip')
+        self.rl_model = PPO.load(model_path)
+        self.reset()
 
     def step(self):
         # Collect data
         self.datacollector.collect(self)
 
-        # Calculate reward
-        if self.prev_gini is None:
-            self.prev_gini = self.compute_gini()
-        new_gini = self.compute_gini()
-        if new_gini < self.prev_gini:
-            reward = (self.prev_gini - new_gini) * 20
-        else: 
-            reward = -0.05
-        self.prev_gini = new_gini
-
         # Get observations which is the wealth of each agent and their position
         obs = self._get_obs()
         
         action, _states = self.rl_model.predict(obs)
-        for i, a in enumerate(self.schedule.agents):
-            a.step(action[i])
+        self.action_dict = action
+        self.schedule.step()
 
 # Define the agent portrayal with different colors for different wealth levels
 def agent_portrayal(agent):
