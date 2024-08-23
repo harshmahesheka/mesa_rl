@@ -72,4 +72,4 @@ server.launch(open_browser=True)
 
 
 ### Alternative Approach: Using Stable-Baselines with Mesa
-In the example above, we utilized RLlib to integrate reinforcement learning algorithms with the Mesa environment, which is particularly useful when you want different policies for different agents. However, if your use case requires a simpler setup where all agents follow the same policy, you can opt for Stable-Baselines. An example of integrating Stable-Baselines with Mesa can be found in the Boltzmann Money mode
+In the example above, we utilized RLlib to integrate reinforcement learning algorithms with the Mesa environment, which is particularly useful when you want different policies for different agents. However, if your use case requires a simpler setup where all agents follow the same policy, you can opt for Stable-Baselines. An example of integrating Stable-Baselines with Mesa can be found in the Boltzmann Money model.
