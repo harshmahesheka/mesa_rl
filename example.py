@@ -1,10 +1,12 @@
 from epstein_civil_violence.model import EpsteinCivilViolence_RL
 from epstein_civil_violence.server import run_model
-from epstein_civil_violence.train import config
+from epstein_civil_violence.train_config import config
 from train import train_model
 
+# Load the environment
 env = EpsteinCivilViolence_RL()
 observation, info = env.reset(seed=42)
+# Running the environment on some random actions
 for _ in range(10):
     action_dict = {}
     for agent in env.schedule.agents:
@@ -17,7 +19,7 @@ for _ in range(10):
 # Training a model
 train_model(config, num_iterations=1, result_path='results.txt', checkpoint_dir='checkpoints')
 
-# Running the model
+# Running the model and visualizing it
 server = run_model(path='checkpoints')
 server.port = 6005
 server.launch(open_browser=True)

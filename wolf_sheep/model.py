@@ -7,7 +7,7 @@ from mesa_models.wolf_sheep.model import WolfSheep
 from mesa_models.wolf_sheep.scheduler import RandomActivationByTypeFiltered
 from mesa_models.wolf_sheep.agents import GrassPatch
 
-from . utility import grid_to_matrix, create_intial_agents
+from . utility import grid_to_observation, create_intial_agents
 from . agents import  Sheep_RL, Wolf_RL
 
 class WolfSheep_RL(WolfSheep, MultiAgentEnv):
@@ -70,7 +70,7 @@ class WolfSheep_RL(WolfSheep, MultiAgentEnv):
 
         # Get observations
         # We convert grid to a matrix and then neighbors of each agent is extracted
-        grid_to_matrix(self, Sheep_RL, Wolf_RL, GrassPatch)
+        grid_to_observation(self, Sheep_RL, Wolf_RL, GrassPatch)
         obs = { }
         for agent in self.schedule.agents:
             if isinstance(agent, (Sheep_RL, Wolf_RL)):
@@ -117,7 +117,7 @@ class WolfSheep_RL(WolfSheep, MultiAgentEnv):
         self.grid = mesa.space.MultiGrid(self.width, self.height, torus=True)
         self.current_id = 0
         create_intial_agents(self, Sheep_RL, Wolf_RL, GrassPatch)
-        grid_to_matrix(self, Sheep_RL, Wolf_RL, GrassPatch)
+        grid_to_observation(self, Sheep_RL, Wolf_RL, GrassPatch)
         obs = {}
         for agent in self.schedule.agents:
             if isinstance(agent, (Sheep_RL, Wolf_RL)):

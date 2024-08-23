@@ -60,7 +60,7 @@ def move(self, action):
     if new_position in possible_steps:
         self.model.grid.move_agent(self, new_position)
 
-def grid_to_matrix(self, Sheep_RL, Wolf_RL, GrassPatch):
+def grid_to_observation(self, Sheep_RL, Wolf_RL, GrassPatch):
     # Convert grid to matrix for better representation
     self.obs_grid = []
     for i in self.grid._grid:

@@ -5,7 +5,7 @@ from ray.rllib.algorithms.algorithm import Algorithm
 from mesa_models.wolf_sheep.agents import GrassPatch
 import os
 from . model import WolfSheep_RL
-from . utility import grid_to_matrix
+from . utility import grid_to_observation
 from . agents import Sheep_RL, Wolf_RL
 
 class WolfSheepServer(WolfSheep_RL):
@@ -26,7 +26,7 @@ class WolfSheepServer(WolfSheep_RL):
             self.reset()
         self.datacollector.collect(self)
         # Get the observation for each agent
-        grid_to_matrix(self, Sheep_RL, Wolf_RL, GrassPatch)
+        grid_to_observation(self, Sheep_RL, Wolf_RL, GrassPatch)
         obs = {}
         for agent in self.schedule.agents:
             if isinstance(agent, (Sheep_RL, Wolf_RL)):

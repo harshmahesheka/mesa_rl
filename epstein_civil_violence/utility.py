@@ -34,7 +34,7 @@ def create_intial_agents(self, Citizen_RL, Cop_RL):
     for citizen in citizens:
         self.schedule.add(citizen)     
 
-def grid_to_matrix(self, Citizen_RL):
+def grid_to_observation(self, Citizen_RL):
     # Convert neighborhood to observation grid
     self.obs_grid = []
     for i in self.grid._grid:

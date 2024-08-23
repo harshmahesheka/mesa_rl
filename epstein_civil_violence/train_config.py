@@ -1,6 +1,6 @@
 import os
 from ray.rllib.algorithms.ppo import PPOConfig
-from . model import EpsteinCivilViolence_RL
+from .model import EpsteinCivilViolence_RL
 from ray.rllib.policy.policy import PolicySpec
 
 def env_creator(_):

@@ -3,7 +3,7 @@ import ray
 from ray.rllib.algorithms.algorithm import Algorithm
 from . agent import Citizen_RL
 from . model import EpsteinCivilViolence_RL
-from . utility import grid_to_matrix
+from . utility import grid_to_observation
 from ray import tune
 import numpy as np
 from mesa_models.epstein_civil_violence.portrayal import citizen_cop_portrayal
@@ -31,7 +31,7 @@ class EpsteinCivilViolenceServer(EpsteinCivilViolence_RL):
     def step(self):
         if self.iteration == 0:
             self.reset()
-        grid_to_matrix(self, Citizen_RL)
+        grid_to_observation(self, Citizen_RL)
         observation = {}
         for agent in self.schedule.agents:
             observation[agent.unique_id] = [self.obs_grid[neighbor[0]][neighbor[1]] for neighbor in agent.neighborhood]  

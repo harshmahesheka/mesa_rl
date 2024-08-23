@@ -3,7 +3,7 @@ import numpy as np
 import gymnasium as gym
 from ray.rllib.env import MultiAgentEnv
 from . agent import Cop_RL, Citizen_RL
-from . utility import create_intial_agents, grid_to_matrix
+from . utility import create_intial_agents, grid_to_observation
 from mesa_models.epstein_civil_violence.model import EpsteinCivilViolence
 
 class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
@@ -89,7 +89,7 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
                     rewards[agent.unique_id] = 0 if agent.condition == "Quiescent" else agent.grievance * 3
 
         # Update matrix for observation space
-        grid_to_matrix(self, Citizen_RL)
+        grid_to_observation(self, Citizen_RL)
         observation = {}
         for agent in self.schedule.agents:
             observation[agent.unique_id] = [self.obs_grid[neighbor[0]][neighbor[1]] for neighbor in agent.neighborhood]  # Get the values from the observation grid for the neighborhood cells
@@ -120,7 +120,7 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
         self.schedule = mesa.time.BaseScheduler(self)
         self.grid = mesa.space.SingleGrid(self.width, self.height, torus=True)
         create_intial_agents(self, Citizen_RL, Cop_RL)
-        grid_to_matrix(self, Citizen_RL)
+        grid_to_observation(self, Citizen_RL)
         # Intialize action dictionary with no action
         self.action_dict = {a.unique_id: (0, 0) for a in self.schedule.agents}
         # Update neighbors for observation space

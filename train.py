@@ -3,6 +3,7 @@ from ray import tune
 from ray.rllib.algorithms.ppo import PPOConfig
 from ray.tune.logger import pretty_print
 
+# Custom function to get the configuration
 def get_config(custom_config):
     config = (
         PPOConfig()
@@ -25,6 +26,7 @@ def get_config(custom_config):
     )
     return config
 
+# Training the model
 def train_model(config, num_iterations=5, result_path='results.txt', checkpoint_dir='checkpoints'):
     tune.register_env(config["env_name"], config['env_creator'])
     
