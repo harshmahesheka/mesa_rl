@@ -4,7 +4,7 @@ Welcome to this comprehensive guide on integrating reinforcement learning (RL) w
 
 ### Getting Started
 
-Before diving into the implementation, take a moment to familiarize yourself with the [Epstein Civil Violence model](#). This will give you a solid understanding of the environment we’ll be working with.
+Before diving into the implementation, take a moment to familiarize yourself with the [Epstein Civil Violence model](./epstein_civil_violence/README.md). This will give you a solid understanding of the environment we’ll be working with.
 
 Next, ensure all dependencies are installed by following the instructions in the `README.md`.
 
