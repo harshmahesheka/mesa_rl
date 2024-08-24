@@ -57,16 +57,9 @@ class WolfSheep_RL(WolfSheep, MultiAgentEnv):
         self.action_dict = action_dict
         self.schedule.step()
         self.datacollector.collect(self)
-    
-        rewards = {}
-        # Calculate rewards
-        # Agents are rewarded for being alive and having energy
-        for agent in self.schedule.agents:
-            if isinstance(agent, (Sheep_RL, Wolf_RL)):
-                if isinstance(agent, Sheep_RL):
-                    rewards[agent.unique_id] = min(4, agent.energy - 4)
-                else:
-                    rewards[agent.unique_id] = min(4, agent.energy/5 - 4)
+        
+        # Get rewards
+        rewards = self.cal_reward()
 
         # Get observations
         # We convert grid to a matrix and then neighbors of each agent is extracted
@@ -110,6 +103,18 @@ class WolfSheep_RL(WolfSheep, MultiAgentEnv):
 
         return obs, rewards, done, truncated, {}
 
+    def cal_reward(self):
+        rewards = {}
+        # Calculate rewards
+        # Agents are rewarded for being alive and having energy
+        for agent in self.schedule.agents:
+            if isinstance(agent, (Sheep_RL, Wolf_RL)):
+                if isinstance(agent, Sheep_RL):
+                    rewards[agent.unique_id] = min(4, agent.energy - 4)
+                else:
+                    rewards[agent.unique_id] = min(4, agent.energy/5 - 4)
+        return rewards
+    
     def reset(self, *, seed=None, options=None):
         # Reset your environment here
         super().reset()

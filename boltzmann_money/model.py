@@ -80,12 +80,8 @@ class BoltzmannWealthModel_RL(BoltzmannWealthModel, gymnasium.Env):
         self.datacollector.collect(self)
         # Compute the new Gini coefficient
         new_gini = compute_gini(self)
-        if new_gini < self.prev_gini:
-            # Compute the reward based on the decrease in Gini coefficient
-            reward = (self.prev_gini - new_gini) * 20
-        else: 
-            # Penalize for increase in Gini coefficient
-            reward = -0.05
+        # Compute the reward based on the change in Gini coefficient
+        reward = self.cal_reward(new_gini)
         self.prev_gini = new_gini
         # Get the observation for the RL model
         obs = self._get_obs()
@@ -102,6 +98,16 @@ class BoltzmannWealthModel_RL(BoltzmannWealthModel, gymnasium.Env):
         info = {}
         truncated = False
         return obs, reward, done, truncated, info
+    
+    def cal_reward(self, new_gini):
+        if new_gini < self.prev_gini:
+            # Compute the reward based on the decrease in Gini coefficient
+            reward = (self.prev_gini - new_gini) * 20
+        else: 
+            # Penalize for increase in Gini coefficient
+            reward = -0.05
+        self.prev_gini = new_gini
+        return reward
 
     def visualize(self):
         # Visualize the Gini coefficient over time

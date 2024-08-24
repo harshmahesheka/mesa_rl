@@ -70,9 +70,25 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
         self.schedule.step()
         self.datacollector.collect(self)
 
-        rewards = {}
-
         # Calculate rewards
+        rewards = self.cal_reward()
+
+        # Update matrix for observation space
+        grid_to_observation(self, Citizen_RL)
+        observation = {}
+        for agent in self.schedule.agents:
+            observation[agent.unique_id] = [self.obs_grid[neighbor[0]][neighbor[1]] for neighbor in agent.neighborhood]  # Get the values from the observation grid for the neighborhood cells
+
+        # RL specific outputs for the environment
+        done = {a.unique_id: False for a in self.schedule.agents}
+        truncated = {a.unique_id: False for a in self.schedule.agents}
+        truncated['__all__'] = np.all(list(truncated.values()))
+        done['__all__'] = True if self.schedule.time > self.max_iters else False
+
+        return observation, rewards, done, truncated, {}
+
+    def cal_reward(self):
+        rewards = {}
         for agent in self.schedule.agents:
             if isinstance(agent, Cop_RL):
                 if agent.arrest_made:
@@ -88,20 +104,8 @@ class EpsteinCivilViolence_RL(EpsteinCivilViolence, MultiAgentEnv):
                 else:
                     rewards[agent.unique_id] = 0 if agent.condition == "Quiescent" else agent.grievance * 3
 
-        # Update matrix for observation space
-        grid_to_observation(self, Citizen_RL)
-        observation = {}
-        for agent in self.schedule.agents:
-            observation[agent.unique_id] = [self.obs_grid[neighbor[0]][neighbor[1]] for neighbor in agent.neighborhood]  # Get the values from the observation grid for the neighborhood cells
+        return rewards
 
-        # RL specific outputs for the environment
-        done = {a.unique_id: False for a in self.schedule.agents}
-        truncated = {a.unique_id: False for a in self.schedule.agents}
-        truncated['__all__'] = np.all(list(truncated.values()))
-        done['__all__'] = True if self.schedule.time > self.max_iters else False
-
-        return observation, rewards, done, truncated, {}
-    
     def reset(self, *, seed=None, options=None):
         """
         Reset the environment after each episode.
