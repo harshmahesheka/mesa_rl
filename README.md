@@ -10,11 +10,12 @@ This repository demonstrates various applications of reinforcement learning (RL)
 
 ### Installation
 
+*Given the number of dependencies required, we recommend starting by creating a Conda environment or a Python virtual environment.*
 1. **Install Mesa Models**  
    Begin by installing the Mesa models:
 
    ```bash
-   pip install -U -e git+https://github.com/projectmesa/mesa-examples#egg=mesa-models
+   pip install -U -e git+https://github.com/projectmesa/mesa-examples@mesa-2.x#egg=mesa-models
    ```
 
 2. **Install RLlib for Multi-Agent Training**  
