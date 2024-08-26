@@ -56,6 +56,7 @@ def move(self, action):
     elif action == 3:
         new_position = (self.pos[0], self.pos[1] + 1)
 
+    new_position = (new_position[0] % self.model.grid.width, new_position[1] % self.model.grid.height)  # Wrap around the grid
     # Check if the new position is valid, then move the agent
     if new_position in possible_steps:
         self.model.grid.move_agent(self, new_position)

@@ -11,7 +11,7 @@ config = {
     "env_name": "WorldSheepModel-v0",
     "env_creator": env_creator,
     "framework": "torch",  # Assuming you want to use PyTorch
-    "train_batch_size": 800,  # Assuming a default value, adjust as necessary
+    "train_batch_size": 150,  # Assuming a default value, adjust as necessary
     "policies": {
         "policy_sheep": PolicySpec(config=PPOConfig.overrides(framework_str="torch")),
         "policy_wolf": PolicySpec(config=PPOConfig.overrides(framework_str="torch"))
@@ -23,5 +23,5 @@ config = {
     "num_env_runners": 20,  # Assuming a default value, adjust as necessary
     "num_envs_per_env_runner": 1,  # Assuming a default value, adjust as necessary
     "batch_mode": "truncate_episodes",  # Assuming a default value, adjust as necessary
-    "rollout_fragment_length": 40  # Assuming a default value, adjust as necessary
+    "rollout_fragment_length": "auto"  # Assuming a default value, adjust as necessary
 }

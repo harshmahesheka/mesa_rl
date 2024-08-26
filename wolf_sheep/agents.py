@@ -33,8 +33,9 @@ class Sheep_RL(Sheep):
             # Create a new sheep:
             if self.model.grass:
                 self.energy /= 2
+            unique_id_str = f"sheep_{self.model.next_id()}"
             lamb = Sheep_RL(
-                self.model.next_id(), self.pos, self.model, self.moore, self.energy
+                unique_id_str, self.pos, self.model, self.moore, self.energy
             )
             self.model.grid.place_agent(lamb, self.pos)
             self.model.schedule.add(lamb)
@@ -70,8 +71,9 @@ class Wolf_RL(Wolf):
             if self.random.random() < self.model.wolf_reproduce:
                 # Create a new wolf cub
                 self.energy /= 2
+                unique_id_str = f"wolf_{self.model.next_id()}"
                 cub = Wolf_RL(
-                    self.model.next_id(), self.pos, self.model, self.moore, self.energy
+                    unique_id_str, self.pos, self.model, self.moore, self.energy
                 )
                 self.model.grid.place_agent(cub, cub.pos)
                 self.model.schedule.add(cub)
