@@ -1,6 +1,6 @@
 # Reinforcement Learning Implementations with Mesa
 
-This repository demonstrates various applications of reinforcement learning (RL) using the Mesa agent-based modeling framework. These implementations were developed as part of my Google Summer of Code 2024 (GSoC'24) project under Project Mesa.
+This repository demonstrates various applications of reinforcement learning (RL) using the Mesa agent-based modelling framework. These implementations were developed as part of my Google Summer of Code 2024 (GSoC'24) project under Project Mesa. The code has migrated to [mesa_examples](https://github.com/projectmesa/mesa-examples/tree/main/rl)
 
 <p align="center">
 <img src="wolf_sheep/resources/wolf_sheep.gif" width="500" height="400">
